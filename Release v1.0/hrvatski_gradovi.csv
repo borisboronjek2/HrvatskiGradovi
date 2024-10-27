@@ -1,0 +1,24 @@
+grad_id;grad_naziv;broj_stanovnika;zupanija;postanski_broj;povrsina;godina_osnutka;status;autooznaka;znamenitost_naziv
+1;Zagreb;767131;Grad Zagreb;10000;641;1094;da;ZG;Zagrebačka katedrala
+1;Zagreb;767131;Grad Zagreb;10000;641;1094;da;ZG;Hrvatsko narodno kazalište
+1;Zagreb;767131;Grad Zagreb;10000;641;1094;da;ZG;Trg bana Josipa Jelačića
+2;Split;160577;Splitsko-dalmatinska;21000;79;295;da;ST;Dioklecijanova palača
+2;Split;160577;Splitsko-dalmatinska;21000;79;295;da;ST;Splitska katedrala
+2;Split;160577;Splitsko-dalmatinska;21000;79;295;da;ST;Dioklecijanovi podrumi
+3;Rijeka;107964;Primorsko-goranska;51000;43;1993;da;RI;Trsatski kaštel
+3;Rijeka;107964;Primorsko-goranska;51000;43;1993;da;RI;Katedrala sv. Vida
+3;Rijeka;107964;Primorsko-goranska;51000;43;1993;da;RI;Korzo
+4;Osijek;96313;Osječko-baranjska;31000;174;1196;da;OS;Katedrala sv Petra i Pavla
+4;Osijek;96313;Osječko-baranjska;31000;174;1196;da;OS;Tvrđa
+4;Osijek;96313;Osječko-baranjska;31000;174;1196;da;OS;Park prirode Kopački rit
+5;Zadar;70779;Zadarska;23000;25;1991;da;ZD;Crkva sv. Donata
+5;Zadar;70779;Zadarska;23000;25;1991;da;ZD;Morske orgulje
+5;Zadar;70779;Zadarska;23000;25;1991;da;ZD;Katedrala sv. Stošije
+6;Slavonski Brod;49891;Brodsko-posavska;35000;54;1244;da;SB;Tvrđava Brod
+7;Velika Gorica;61075;Zagrebačka;10410;100;1228;ne;ZG;Muzej Turopolja
+8;Karlovac;49377;Karlovačka;47000;95;1579;da;KA;Muzej Domovinskog rata
+9;Pula;52220;Istarska;52100;54;-45;ne;PU;Pulska arena
+9;Pula;52220;Istarska;52100;54;-45;ne;PU;Augustov hram
+9;Pula;52220;Istarska;52100;54;-45;ne;PU;Katedrala uznesenja blažene djevice Marije
+10;Sisak;40121;Sisačko-moslavačka;44000;59;1838;da;SK;Katedrala uzvisenja svetog križa
+10;Sisak;40121;Sisačko-moslavačka;44000;59;1838;da;SK;Bazilika sv. kvirina
