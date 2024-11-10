@@ -1,0 +1,83 @@
+{
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "$id": "http://example.com/example.json",
+    "type": "array",
+    "default": [],
+    "title": "Root Schema",
+    "items": {
+        "type": "object",
+        "title": "A Schema",
+        "required": [
+            "grad_id",
+            "grad_naziv",
+            "broj_stanovnika",
+            "zupanija",
+            "postanski_broj",
+            "povrsina",
+            "godina_osnutka",
+            "status",
+            "autooznaka",
+            "znamenitosti"
+        ],
+        "properties": {
+            "grad_id": {
+                "type": "integer",
+                "title": "The grad_id Schema"
+            },
+            "grad_naziv": {
+                "type": "string",
+                "title": "The grad_naziv Schema"
+            },
+            "broj_stanovnika": {
+                "type": "integer",
+                "title": "The broj_stanovnika Schema"
+            },
+            "zupanija": {
+                "type": "string",
+                "title": "The zupanija Schema"
+            },
+            "postanski_broj": {
+                "type": "integer",
+                "title": "The postanski_broj Schema"
+            },
+            "povrsina": {
+                "type": "integer",
+                "title": "The povrsina Schema"
+            },
+            "godina_osnutka": {
+                "type": "integer",
+                "title": "The godina_osnutka Schema"
+            },
+            "status": {
+                "type": "string",
+                "title": "The status Schema"
+            },
+            "autooznaka": {
+                "type": "string",
+                "title": "The autooznaka Schema"
+            },
+            "znamenitosti": {
+                "type": "array",
+                "title": "The znamenitosti Schema",
+                "items": {
+                    "type": "object",
+                    "title": "A Schema",
+                    "required": [
+                        "znamenitost_id",
+                        "naziv"
+                    ],
+                    "properties": {
+                        "znamenitost_id": {
+                            "type": "integer",
+                            "title": "The znamenitost_id Schema"
+                        },
+                        "naziv": {
+                            "type": "string",
+                            "title": "The naziv Schema"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
