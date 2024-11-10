@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podaci iz Baze</title>
+    <style>
+        /* Centriranje naslova */
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            color: #2c3e50;
+            margin-top: 20px;
+        }
+
+        /* Osnovni stilovi za tablicu */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Stilovi za obrazac filtriranja */
+        #filterForm {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        #searchInput, #filterSelect, button {
+            padding: 10px;
+            font-size: 1rem;
+        }
+
+        /* Stil za gumbe */
+        .button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            color: #ffffff;
+            background-color: #3498db;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Centriranje gumba za preuzimanje */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        /* Centriranje gumba za preuzimanje */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Podaci iz Baze</h1>
+    <form id="filterForm">
+        <input type="text" id="searchInput" placeholder="Pretraži...">
+        <select id="filterSelect">
+            <option value="all">Svi atributi</option>
+            <option value="grad_naziv">Grad Naziv</option>
+            <option value="zupanija">Županija</option>
+        </select>
+        <button type="submit" class="button">Filtriraj</button>
+        <button type="button" id="resetButton" class="button">Poništi</button>
+    </form>
+
+    <div class="button-container">
+        <button id="downloadJson" class="button">Preuzmi JSON</button>
+        <button id="downloadCsv" class="button">Preuzmi CSV</button>
+    </div>
+
+    <div id="data-container"></div>
+    
+      <script>
+        let originalData = []; // Svi podaci iz baze
+        let filteredData = [];  // Filtrirani podaci koji se prikazuju
+
+        // Funkcija za dohvaćanje svih podataka i pohranjivanje u originalData
+        async function fetchData() {
+            const response = await fetch('http://localhost:3000/api/gradovi');
+            const data = await response.json();
+            originalData = data;
+            filteredData = data;
+            displayData(data);
+        }
+
+        // Funkcija za prikaz podataka u tablici
+        function displayData(data) {
+            const container = document.getElementById('data-container');
+            container.innerHTML = '';
+
+            // Generiranje tablice
+            if (data.length) {
+                const table = document.createElement('table');
+                const headerRow = table.insertRow();
+                const headers = Object.keys(data[0]);
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.textContent = header;
+                    headerRow.appendChild(th);
+                });
+
+                // Popunjavanje redaka
+                data.forEach(item => {
+                    const row = table.insertRow();
+                    headers.forEach(header => {
+                        const cell = row.insertCell();
+                        if (header === 'znamenitosti' && Array.isArray(item[header])) {
+                            cell.textContent = item[header].map(z => z.naziv).join(', ');
+                        } else {
+                            cell.textContent = item[header] instanceof Object ? JSON.stringify(item[header]) : item[header];
+                        }
+                    });
+                });
+                container.appendChild(table);
+            } else {
+                container.textContent = 'Nema podataka za prikaz';
+            }
+        }
+
+        // Funkcija za primjenu filtra
+        function applyFilter() {
+            const searchText = document.getElementById('searchInput').value.toLowerCase();
+            const attribute = document.getElementById('filterSelect').value;
+
+            // Filtriranje podataka lokalno
+            filteredData = originalData.filter(item => {
+                if (attribute === 'all') {
+                    // Pretražuje sve atribute
+                    return Object.values(item).some(value => 
+                        String(value).toLowerCase().includes(searchText)
+                    );
+                } else {
+                    // Pretražuje samo odabrani atribut
+                    return String(item[attribute]).toLowerCase().includes(searchText);
+                }
+            });
+
+            displayData(filteredData); // Prikaz filtriranih podataka
+        }
+
+        // Event listener za filtriranje
+        document.getElementById('filterForm').addEventListener('submit', event => {
+            event.preventDefault();
+            applyFilter();
+        });
+
+        // Event listener za poništavanje filtra
+        document.getElementById('resetButton').addEventListener('click', () => {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('filterSelect').value = 'all';
+            filteredData = originalData;
+            displayData(originalData);
+        });
+
+        // Funkcija za preuzimanje JSON-a filtriranih podataka
+        document.getElementById('downloadJson').addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify(filteredData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gradovi_filtrirani.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Funkcija za preuzimanje CSV-a filtriranih podataka
+        document.getElementById('downloadCsv').addEventListener('click', () => {
+            const headers = Object.keys(filteredData[0]);
+            const csvData = [
+                headers.join(','),  // Naslovi stupaca
+                ...filteredData.map(item => headers.map(header => {
+                    const value = item[header];
+                    return typeof value === 'object' && value !== null ? 
+                        value.map(z => z.naziv).join(', ') : value;
+                }).join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvData], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gradovi_filtrirani.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        fetchData();
+      </script>
+</body>
+</html>

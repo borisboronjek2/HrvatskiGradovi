@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hrvatski Gradovi</title>
+    <style>
+        /* Centriranje naslova */
+        h1 {
+            text-align: center;
+            font-size: 2em;
+            color: #2c3e50;
+            margin-top: 20px;
+        }
+
+        /* Stil za gumbe */
+        .button {
+            border: 2px solid black;
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1rem;
+            text-align: center;
+            text-decoration: none;
+            color: #ffffff;
+            background-color: #3498db;
+            border-radius: 5px;
+            margin: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Centriranje gumba */
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        #release-info {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+        }
+
+        #release-info h2 {
+            font-size: 1.5em;
+            color: #333;
+        }
+
+        #release-info ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        #release-info ul li {
+            margin-bottom: 10px;
+        }
+
+        #release-info a {
+            color: #0073e6;
+            text-decoration: none;
+        }
+
+        #release-info a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <h1>Hrvatski Gradovi</h1>
+    <p style="text-align: center;">Ovdje možete preuzeti podatke u JSON i CSV formatu ili pristupiti stranici s bazom podataka.</p>
+    
+    <div class="button-container">
+        <a href="http://localhost:3000/api/gradovi/json" download="gradovi.json" class="button">Preuzmi JSON</a>
+        <a href="http://localhost:3000/api/gradovi/csv" download="gradovi.csv" class="button">Preuzmi CSV</a>
+        <a href="database.html" class="button">Prikaži bazu podataka</a>
+    </div>
+    <section id="release-info" style="margin-top: 20px;">
+        <h2>Release v2.0</h2>
+        
+        <p><strong>Licenca:</strong> Creative Commons Attribution 4.0 International (CC BY 4.0)</p>
+        <p>
+          Ovaj skup podataka objavljen je pod Creative Commons Attribution 4.0 International licencom.
+          To znači da ga bilo tko može slobodno koristiti, dijeliti i prilagođavati, uz obvezu navođenja izvora.
+          Više informacija o licenci dostupno je na 
+          <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank">Creative Commons stranici</a>.
+        </p>
+        
+        <p><strong>Autor:</strong> Boris Boronjek</p>
+        
+        <p><strong>Verzija skupa podataka:</strong> 2.0</p>
+        
+        <p><strong>Jezik u kojemu se nalaze podaci:</strong> hrvatski</p>
+        
+        <h3>Opis atributa:</h3>
+        <ul>
+          <li><code>grad_id</code> - jedinstveni identifikator</li>
+          <li><code>grad_naziv</code> - naziv grada</li>
+          <li><code>broj_stanovnika</code> - broj stanovnika grada</li>
+          <li><code>zupanija</code> - županija u kojoj se grad nalazi</li>
+          <li><code>postanski_broj</code> - poštanski broj grada</li>
+          <li><code>povrsina</code> - površina koju grad zauzima u km²</li>
+          <li><code>godina_osnutka</code> - godina osnutka grada</li>
+          <li><code>status</code> - označuje je li grad sjedište županije</li>
+          <li><code>autooznaka</code> - registracijske tablice koje se koriste u gradu</li>
+          <li><code>znamenitosti</code> - popis kulturnih/turističkih znamenitosti u gradu</li>
+        </ul>
+      </section>
+</body>
+</html>
