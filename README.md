@@ -1,4 +1,4 @@
-# Release v2.0
+# Release v3.0
 
 ## 1. Laboratorijska vježba: Izrada otvorenog skupa podataka
 
@@ -7,7 +7,7 @@ Ovaj skup podataka objavljen je pod Creative Commons Attribution 4.0 Internation
 
 **Autor:** Boris Boronjek
 
-**Verzija skupa podataka:** 2.0
+**Verzija skupa podataka:** 3.0
 
 **Jezik u kojemu se nalaze podaci:** hrvatski
 

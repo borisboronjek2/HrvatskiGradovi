@@ -1,0 +1,336 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "API za Hrvatske Gradove",
+      "description": "REST API za dohvaćanje podataka o hrvatskim gradovima i njihovim znamenitostima.",
+      "version": "3.0.0"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:3000",
+        "description": "Lokalni server"
+      }
+    ],
+    "paths": {
+      "/api/gradovi": {
+        "get": {
+          "summary": "Dohvati sve gradove",
+          "description": "Vraća listu svih gradova sa svim njihovim atributima i znamenitostima.",
+          "responses": {
+            "200": {
+              "description": "Uspješno dohvaćeni gradovi.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Grad"
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Greška na serveru."
+            }
+          }
+        },
+        "post": {
+          "summary": "Dodaj novi grad",
+          "description": "Dodaje novi grad u bazu podataka.",
+          "requestBody": {
+            "description": "Podaci o novom gradu.",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Grad"
+                }
+              }
+            }
+          },
+          "responses": {
+            "201": {
+              "description": "Grad uspješno dodan.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Grad"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Neispravni podaci za unos."
+            },
+            "500": {
+              "description": "Greška na serveru."
+            }
+          }
+        }
+      },
+      "/api/gradovi/filter": {
+        "get": {
+          "summary": "Filtriraj gradove",
+          "description": "Omogućuje filtriranje gradova prema nazivu grada i/ili županiji.",
+          "parameters": [
+            {
+              "name": "naziv",
+              "in": "query",
+              "description": "Naziv grada za filtriranje (djelomično ili potpuno podudaranje).",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "zupanija",
+              "in": "query",
+              "description": "Naziv županije za filtriranje.",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Uspješno dohvaćeni filtrirani gradovi.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Grad"
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Greška na serveru."
+            }
+          }
+        }
+      },
+      "/api/gradovi/json": {
+        "get": {
+          "summary": "Preuzmi gradove u JSON formatu",
+          "description": "Omogućuje preuzimanje svih gradova u JSON datoteci.",
+          "responses": {
+            "200": {
+              "description": "JSON datoteka s gradovima.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Grad"
+                    }
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Greška na serveru."
+            }
+          }
+        }
+      },
+      "/api/gradovi/csv": {
+        "get": {
+          "summary": "Preuzmi gradove u CSV formatu",
+          "description": "Omogućuje preuzimanje svih gradova u CSV datoteci.",
+          "responses": {
+            "200": {
+              "description": "CSV datoteka s gradovima.",
+              "content": {
+                "text/csv": {
+                  "schema": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            },
+            "500": {
+              "description": "Greška na serveru."
+            }
+          }
+        }
+      },
+      "/api/gradovi/{grad_id}": {
+        "get": {
+          "summary": "Dohvati grad prema ID-u",
+          "description": "Vraća detaljne informacije o gradu na temelju gradskog ID-a.",
+          "parameters": [
+            {
+              "name": "grad_id",
+              "in": "path",
+              "description": "ID grada",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Uspješno dohvaćen grad.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Grad"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Grad nije pronađen."
+            },
+            "500": {
+              "description": "Greška na serveru."
+            }
+          }
+        },
+        "put": {
+          "summary": "Ažuriraj grad prema ID-u",
+          "description": "Ažurira informacije o postojećem gradu na temelju ID-a.",
+          "parameters": [
+            {
+              "name": "grad_id",
+              "in": "path",
+              "description": "ID grada koji treba ažurirati.",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "requestBody": {
+            "description": "Novi podaci za ažuriranje grada.",
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Grad"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Grad uspješno ažuriran.",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Grad"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Neispravni podaci za ažuriranje."
+            },
+            "404": {
+              "description": "Grad nije pronađen."
+            },
+            "500": {
+              "description": "Greška na serveru."
+            }
+          }
+        },
+        "delete": {
+          "summary": "Izbriši grad prema ID-u",
+          "description": "Briše grad iz baze podataka na temelju ID-a.",
+          "parameters": [
+            {
+              "name": "grad_id",
+              "in": "path",
+              "description": "ID grada koji treba izbrisati.",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Grad uspješno izbrisan."
+            },
+            "404": {
+              "description": "Grad nije pronađen."
+            },
+            "500": {
+              "description": "Greška na serveru."
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "Grad": {
+          "type": "object",
+          "properties": {
+            "grad_id": {
+              "type": "integer",
+              "example": 1
+            },
+            "naziv": {
+              "type": "string",
+              "example": "Zagreb"
+            },
+            "broj_stanovnika": {
+              "type": "integer",
+              "example": 790017
+            },
+            "zupanija": {
+              "type": "string",
+              "example": "Grad Zagreb"
+            },
+            "postanski_broj": {
+              "type": "string",
+              "example": "10000"
+            },
+            "povrsina": {
+              "type": "integer",
+              "example": 641
+            },
+            "godina_osnutka": {
+              "type": "integer",
+              "example": 1094
+            },
+            "status": {
+              "type": "string",
+              "example": "da"
+            },
+            "autooznaka": {
+              "type": "string",
+              "example": "ZG"
+            },
+            "znamenitosti": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Znamenitost"
+              }
+            }
+          }
+        },
+        "Znamenitost": {
+          "type": "object",
+          "properties": {
+            "znamenitost_id": {
+              "type": "integer",
+              "example": 1
+            },
+            "naziv": {
+              "type": "string",
+              "example": "Zagrebačka katedrala"
+            }
+          }
+        }
+      }
+    }
+  }
+  
