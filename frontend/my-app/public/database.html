@@ -92,13 +92,14 @@
     <div class="button-container">
         <button id="downloadJson" class="button">Preuzmi JSON</button>
         <button id="downloadCsv" class="button">Preuzmi CSV</button>
+        <button id="home" class="button">Početna</button>
     </div>
 
     <div id="data-container"></div>
     
       <script>
-        let originalData = []; // Svi podaci iz baze
-        let filteredData = [];  // Filtrirani podaci koji se prikazuju
+        let originalData = [];
+        let filteredData = [];
 
         // Funkcija za dohvaćanje svih podataka i pohranjivanje u originalData
         async function fetchData() {
@@ -109,7 +110,7 @@
                 console.log('Odgovor API-ja:', result);
 
                 if (result.status) {
-                    originalData = result.data; // Pristup podacima unutar `data` polja
+                    originalData = result.data;
                     filteredData = result.data;
                     displayData(result.data);
                 } else {
@@ -166,7 +167,7 @@
                 const response = await fetch(`http://localhost:3000/api/gradovi/filter?searchText=${encodeURIComponent(searchText)}&attribute=${encodeURIComponent(attribute)}`);
                 const result = await response.json();
 
-                console.log('Rezultat filtriranja:', result); // Dodano za debug
+                console.log('Rezultat filtriranja:', result);
 
                 if (result.status) {
                     filteredData = result.data;
@@ -210,7 +211,7 @@
         document.getElementById('downloadCsv').addEventListener('click', () => {
             const headers = Object.keys(filteredData[0]);
             const csvData = [
-                headers.join(','),  // Naslovi stupaca
+                headers.join(','),
                 ...filteredData.map(item => headers.map(header => {
                     const value = item[header];
                     return typeof value === 'object' && value !== null ? 
@@ -225,6 +226,10 @@
             a.download = 'gradovi_filtrirani.csv';
             a.click();
             URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('home').addEventListener('click', () => {
+            window.location.href = 'http://localhost:3001/index.html';
         });
 
         fetchData();

@@ -4,11 +4,33 @@ const { Pool } = require('pg');
 const { Parser } = require('json2csv');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./openapi.json');
+const fs = require('fs');
+const path = require('path');
+
+const { auth } = require('express-openid-connect');
+const config = {
+  authRequired: false,
+  auth0Logout: true,
+  secret: process.env.SECRET || 'Y6OiEKk4ABvxRxUHOtHmt-s5h4FmfzUOd9ktDc2a4tIPquKXtRiPkOG4FvBQeKNz',
+  baseURL: process.env.BASE_URL || 'http://localhost:3000',
+  clientID: process.env.CLIENT_ID || 'TZgl6mwy7xmBss2uCUWMGSACnO0xTT8J',
+  issuerBaseURL: process.env.ISSUER_BASE_URL || 'https://dev-gwfe2r7mwph0mdyk.us.auth0.com',
+  session: {
+    cookie: {
+        domain: 'localhost',
+        secure: false,
+    },
+},
+};
 
 const app = express();
 const port = 3000;
 
-app.use(cors());
+app.use(auth(config));
+app.use(cors({
+  origin: 'http://localhost:3001',
+  credentials: true,
+}));
 app.use(express.json());
 
 // Postavljanje konekcije s bazom podataka
@@ -28,6 +50,112 @@ function responseWrapper(status, message, data) {
     data: data,
   };
 }
+
+app.use((req, res, next) => {
+  console.log('Session:', req.session);
+  console.log('OIDC:', req.oidc);
+  next();
+});
+
+app.get('/', (req, res) => {
+  res.redirect('http://localhost:3001/index.html');
+});
+
+app.get('/api/auth/status', (req, res) => {
+  console.log('req.oidc:', req.oidc);
+    console.log('req.oidc.isAuthenticated:', req.oidc?.isAuthenticated());
+    console.log('req.oidc.user:', req.oidc?.user);
+
+  if (req.oidc.isAuthenticated()) {
+      res.json({ loggedIn: true});
+  } else {
+      res.json({ loggedIn: false });
+  }
+});
+
+app.get('/profile', (req, res) => {
+  console.log('req.oidc:', req.oidc);
+    console.log('req.oidc.isAuthenticated:', req.oidc?.isAuthenticated());
+    console.log('req.oidc.user:', req.oidc?.user);
+  if (!req.oidc.isAuthenticated()) {
+    return res.status(401).send('Prijavite se za pristup profilu.');
+  }
+  res.json(req.oidc.user);
+});
+
+app.get('/refresh-data', async (req, res) => {
+  if (!req.oidc.isAuthenticated()) {
+    return res.status(401).send('Prijavite se za osvježavanje podataka.');
+  }
+  try {
+    const jsonResult = await pool.query(`
+      SELECT json_agg(
+        json_build_object(
+          'grad_id', g.id,
+          'grad_naziv', g.naziv,
+          'broj_stanovnika', g.broj_stanovnika,
+          'zupanija', g.zupanija,
+          'postanski_broj', g.postanski_broj,
+          'povrsina', g.povrsina,
+          'godina_osnutka', g.godina_osnutka,
+          'status', g.status,
+          'autooznaka', g.autooznaka,
+          'znamenitosti', (
+            SELECT json_agg(
+              json_build_object(
+                'znamenitost_id', z.id,
+                'naziv', z.naziv
+              )
+            )
+            FROM znamenitosti z
+            WHERE z.grad_id = g.id
+          )
+        )
+      ) AS gradovi
+      FROM gradovi g
+    `);
+    const gradovi = jsonResult.rows[0].gradovi.map(grad => ({
+      "@context": {
+        "@vocab": "http://schema.org/",
+        "zupanija": "administrativeArea",
+        "povrsina": "area"
+      },
+      ...grad
+    }));
+
+    const csvResult = await pool.query(`
+      SELECT 
+        g.id AS grad_id,
+        g.naziv AS grad_naziv,
+        g.broj_stanovnika,
+        g.zupanija,
+        g.postanski_broj,
+        g.povrsina,
+        g.godina_osnutka,
+        g.status,
+        g.autooznaka,
+        string_agg(z.naziv, ', ') AS znamenitosti
+      FROM gradovi g
+      LEFT JOIN znamenitosti z ON z.grad_id = g.id
+      GROUP BY g.id
+    `);
+
+    const jsonFilePath = path.join(__dirname, 'data', 'hrvatski_gradovi.json');
+    const csvFilePath = path.join(__dirname, 'data', 'hrvatski_gradovi.csv');
+
+    fs.writeFileSync(jsonFilePath, JSON.stringify(gradovi, null, 2), 'utf8');
+
+    const json2csvParser = new Parser();
+    const csvData = json2csvParser.parse(csvResult.rows);
+    fs.writeFileSync(csvFilePath, csvData, 'utf8');
+
+    console.log('Podaci su osvježeni.');
+    res.redirect('http://localhost:3001/index.html');
+  } catch (error) {
+    console.error('Greška prilikom osvježavanja podataka:', error);
+    res.status(500).send('Greška prilikom osvježavanja podataka.');
+  }
+});
 
 // Ruta za dohvaćanje svih gradova
 app.get('/api/gradovi', async (req, res) => {
@@ -61,7 +189,7 @@ app.get('/api/gradovi', async (req, res) => {
 
 // Ruta za filtriranje gradova
 app.get('/api/gradovi/filter', async (req, res) => {
-  const { searchText, attribute } = req.query; // Dobivanje parametara iz upita
+  const { searchText, attribute } = req.query;
 
   try {
     let query = `
@@ -84,13 +212,11 @@ app.get('/api/gradovi/filter', async (req, res) => {
       FROM gradovi g
     `;
 
-    const params = []; // Parametri za SQL upit
+    const params = [];
     let condition = '';
 
-    // Dodavanje uvjeta za filtriranje
     if (searchText) {
       if (attribute) {
-        // Filtriranje prema odabranom atributu
         switch (attribute) {
           case 'grad_naziv':
             condition = `WHERE g.naziv ILIKE $1`;
@@ -135,73 +261,34 @@ app.get('/api/gradovi/filter', async (req, res) => {
 
 // Ruta za preuzimanje podataka u JSON formatu
 app.get('/api/gradovi/json', async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT json_agg(
-        json_build_object(
-          'grad_id', g.id,
-          'grad_naziv', g.naziv,
-          'broj_stanovnika', g.broj_stanovnika,
-          'zupanija', g.zupanija,
-          'postanski_broj', g.postanski_broj,
-          'povrsina', g.povrsina,
-          'godina_osnutka', g.godina_osnutka,
-          'status', g.status,
-          'autooznaka', g.autooznaka,
-          'znamenitosti', (
-            SELECT json_agg(
-              json_build_object(
-                'znamenitost_id', z.id,
-                'naziv', z.naziv
-              )
-            )
-            FROM znamenitosti z
-            WHERE z.grad_id = g.id
-          )
-        )
-      ) AS gradovi
-      FROM gradovi g
-    `);
+  const filePath = path.join(__dirname, 'data', 'hrvatski_gradovi.json');
+  
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Greška pri čitanju JSON datoteke:', err);
+      return res.status(500).json({ success: false, message: 'Greška u preuzimanju JSON podataka.' });
+    }
 
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Content-Disposition', 'attachment; filename=gradovi.json');
-    res.send(result.rows[0].gradovi);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json(responseWrapper(false, 'Greška u preuzimanju podataka.', null));
-  }
+    res.send(data);
+  });
 });
 
 // Ruta za preuzimanje podataka u CSV formatu
 app.get('/api/gradovi/csv', async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT 
-        g.id AS grad_id,
-        g.naziv AS grad_naziv,
-        g.broj_stanovnika,
-        g.zupanija,
-        g.postanski_broj,
-        g.povrsina,
-        g.godina_osnutka,
-        g.status,
-        g.autooznaka,
-        string_agg(z.naziv, ', ') AS znamenitosti
-      FROM gradovi g
-      LEFT JOIN znamenitosti z ON z.grad_id = g.id
-      GROUP BY g.id
-    `);
-
-    const json2csvParser = new Parser();
-    const csv = json2csvParser.parse(result.rows);
+  const filePath = path.join(__dirname, 'data', 'hrvatski_gradovi.csv');
+  
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Greška pri čitanju CSV datoteke:', err);
+      return res.status(500).json({ success: false, message: 'Greška u preuzimanju CSV podataka.' });
+    }
 
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename=gradovi.csv');
-    res.send(csv);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json(responseWrapper(false, 'Greška u preuzimanju podataka.', null));
-  }
+    res.send(data);
+  });
 });
 
 // GET ruta za dohvaćanje pojedinog grada po ID-u
@@ -233,7 +320,26 @@ app.get('/api/gradovi/:id', async (req, res) => {
       return res.status(404).json(responseWrapper(false, 'Grad nije pronađen.', null));
     }
 
-    res.json(responseWrapper(true, 'Grad uspješno dohvaćen.', result.rows[0]));
+    const grad = result.rows[0];
+    const jsonLdResponse = {
+      "@context": {
+        "@vocab": "http://schema.org/",
+        "zupanija": "administrativeArea",
+        "povrsina": "area"
+      },
+      "grad_id": grad.grad_id,
+      "grad_naziv": grad.grad_naziv,
+      "broj_stanovnika": grad.broj_stanovnika,
+      "zupanija": grad.zupanija,
+      "postanski_broj": grad.postanski_broj,
+      "povrsina": grad.povrsina,
+      "godina_osnutka": grad.godina_osnutka,
+      "status": grad.status,
+      "autooznaka": grad.autooznaka,
+      "znamenitosti": grad.znamenitosti
+    };
+
+    res.json(responseWrapper(true, 'Grad uspješno dohvaćen.', jsonLdResponse));
   } catch (error) {
     console.error(error);
     res.status(500).json(responseWrapper(false, 'Greška u dohvaćanju grada.', null));

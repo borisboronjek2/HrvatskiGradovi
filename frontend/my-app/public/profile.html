@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Korisnički profil</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+    }
+    header {
+      color: white;
+      padding: 15px 20px;
+      text-align: center;
+    }
+    main {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      color: #333;
+    }
+    .profile-info {
+      margin-bottom: 20px;
+    }
+    img {
+      display: block;
+      margin: 10px auto;
+      max-width: 150px;
+      border-radius: 50%;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Korisnički profil</h1>
+  </header>
+  <main>
+    <div id="profile" class="profile-info">
+      <p>Učitavanje podataka...</p>
+    </div>
+    <button id="logout">Odjavi se</button>
+    <button id="home">Početna</button>
+  </main>
+
+  <script>
+    async function fetchProfile() {
+      try {
+        const response = await fetch('http://localhost:3000/profile', {
+          credentials: 'include',
+        });
+        if (!response.ok) {
+          throw new Error('Neuspjelo dohvaćanje profila. Provjerite jeste li prijavljeni.');
+        }
+        const user = await response.json();
+
+        const profileDiv = document.getElementById('profile');
+        profileDiv.innerHTML = `
+          <p><strong>Ime:</strong> ${user.given_name || 'N/A'}</p>
+          <p><strong>Prezime:</strong> ${user.family_name || 'N/A'}</p>
+          <p><strong>Nadimak:</strong> ${user.nickname || 'N/A'}</p>
+          <p><strong>Email:</strong> ${user.email || 'N/A'}</p>
+          <img src="${user.picture}" alt="Profilna slika">
+        `;
+      } catch (error) {
+        document.getElementById('profile').innerHTML = `<p>${error.message}</p>`;
+      }
+    }
+
+    document.getElementById('logout').addEventListener('click', () => {
+      window.location.href = 'http://localhost:3000/logout';
+    });
+
+    document.getElementById('home').addEventListener('click', () => {
+      window.location.href = 'http://localhost:3001/index.html';
+    });
+
+    fetchProfile();
+  </script>
+</body>
+</html>

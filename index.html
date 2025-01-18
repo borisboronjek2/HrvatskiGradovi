@@ -69,20 +69,38 @@
         #release-info a:hover {
             text-decoration: underline;
         }
+
+        nav {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        nav a {
+            margin: 0 10px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            color: #3498db;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #2980b9;
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <h1>Hrvatski Gradovi</h1>
     <p style="text-align: center;">Ovdje možete preuzeti podatke u JSON i CSV formatu ili pristupiti stranici s bazom podataka.</p>
-    
+    <nav>
+    </nav>
     <div class="button-container">
         <a href="http://localhost:3000/api/gradovi/json" download="gradovi.json" class="button">Preuzmi JSON</a>
         <a href="http://localhost:3000/api/gradovi/csv" download="gradovi.csv" class="button">Preuzmi CSV</a>
         <a href="database.html" class="button">Prikaži bazu podataka</a>
     </div>
     <section id="release-info" style="margin-top: 20px;">
-        <h2>Release v3.0</h2>
+        <h2>Release v4.0</h2>
         
         <p><strong>Licenca:</strong> Creative Commons Attribution 4.0 International (CC BY 4.0)</p>
         <p>
@@ -94,7 +112,7 @@
         
         <p><strong>Autor:</strong> Boris Boronjek</p>
         
-        <p><strong>Verzija skupa podataka:</strong> 2.0</p>
+        <p><strong>Verzija skupa podataka:</strong> 4.0</p>
         
         <p><strong>Jezik u kojemu se nalaze podaci:</strong> hrvatski</p>
         
@@ -112,5 +130,31 @@
           <li><code>znamenitosti</code> - popis kulturnih/turističkih znamenitosti u gradu</li>
         </ul>
       </section>
+      <script>
+        async function updateNavigation() {
+            fetch('http://localhost:3000/api/auth/status', {
+                method: 'GET',
+                credentials: 'include',
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    console.log('Auth status:', data);
+                    const nav = document.querySelector('nav');
+                    nav.innerHTML = '';
+                    if (data.loggedIn) {
+                        nav.innerHTML = `
+                            <a href="http://localhost:3000/logout">Odjava</a>
+                            <a href="http://localhost:3001/profile.html">Korisnički profil</a>
+                            <a href="http://localhost:3000/refresh-data">Osvježi preslike</a>
+                        `;
+                    } else {
+                        nav.innerHTML = `<a href="http://localhost:3000/login">Prijava</a>`;
+                    }
+                })
+                .catch((error) => console.error('Greška:', error));
+        }
+    
+        document.addEventListener('DOMContentLoaded', updateNavigation);
+    </script>
 </body>
 </html>
